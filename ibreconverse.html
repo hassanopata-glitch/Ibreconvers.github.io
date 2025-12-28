@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBReconVerse - Advanced OSINT Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #00ff41;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.8em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #00ff41, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+        }
+
+        .nav-links a {
+            color: #00ff41;
+            text-decoration: none;
+            transition: all 0.3s;
+            padding: 8px 15px;
+            border-radius: 5px;
+        }
+
+        .nav-links a:hover {
+            background: rgba(0, 255, 65, 0.1);
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+        }
+
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, rgba(0, 255, 65, 0.1), rgba(0, 212, 255, 0.1));
+            border-bottom: 1px solid rgba(0, 255, 65, 0.3);
+        }
+
+        .hero h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            text-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+        }
+
+        .hero p {
+            font-size: 1.2em;
+            color: #00d4ff;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .warning-banner {
+            background: rgba(255, 193, 7, 0.1);
+            border: 2px solid #ffc107;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: #ffc107;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .tool-card {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #00ff41;
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.1), transparent);
+            transition: 0.5s;
+        }
+
+        .tool-card:hover::before {
+            left: 100%;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 255, 65, 0.3);
+            border-color: #00d4ff;
+        }
+
+        .tool-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .tool-title {
+            font-size: 1.5em;
+            color: #00ff41;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .tool-description {
+            color: #aaa;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .tool-features {
+            list-style: none;
+            padding: 0;
+            color: #00d4ff;
+            font-size: 0.9em;
+        }
+
+        .tool-features li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .tool-features li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: #00ff41;
+        }
+
+        .launch-btn {
+            background: linear-gradient(135deg, #00ff41, #00d4ff);
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .launch-btn:hover {
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+            transform: scale(1.05);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: #0a0e27;
+            border: 2px solid #00ff41;
+            border-radius: 15px;
+            max-width: 1200px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 0 50px rgba(0, 255, 65, 0.3);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #00ff41, #00d4ff);
+            color: #000;
+            padding: 20px 30px;
+            border-radius: 13px 13px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close-btn {
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5em;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 0, 0, 0.8);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            color: #00ff41;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00ff41;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1em;
+        }
+
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
+            outline: none;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+        }
+
+        .terminal-output {
+            background: #000;
+            border: 1px solid #00ff41;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            color: #00ff41;
+            height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .terminal-line {
+            margin: 5px 0;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .terminal-line.success { color: #00ff41; }
+        .terminal-line.info { color: #00d4ff; }
+        .terminal-line.warning { color: #ffc107; }
+        .terminal-line.error { color: #ff4444; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(0, 255, 65, 0.1);
+            border: 1px solid #00ff41;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #00ff41;
+        }
+
+        .stat-label {
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        .progress-bar {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00ff41;
+            border-radius: 10px;
+            height: 30px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #00ff41, #00d4ff);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .results-container {
+            margin-top: 30px;
+        }
+
+        .result-item {
+            background: rgba(0, 0, 0, 0.5);
+            border-left: 3px solid #00ff41;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .result-title {
+            color: #00ff41;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .result-data {
+            color: #00d4ff;
+            font-family: 'Courier New', monospace;
+        }
+
+        @media (max-width: 768px) {
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+            .hero h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">⚡ IBReconVerse</div>
+        <div class="nav-links">
+            <a href="#home">Home</a>
+            <a href="#tools">Tools</a>
+            <a href="#docs">Docs</a>
+            <a href="#about">About</a>
+        </div>
+    </div>
+
+    <div class="hero">
+        <h1>IBReconVerse</h1>
+        <p>Advanced OSINT & Cybersecurity Reconnaissance Platform - Discover More, Faster, Smarter</p>
+    </div>
+
+    <div class="warning-banner">
+        <strong>⚠️ LEGAL NOTICE:</strong> This platform is for authorized security testing and educational purposes only. Always obtain proper authorization before conducting reconnaissance activities.
+    </div>
+
+    <div class="container">
+        <div class="tools-grid">
+            <!-- Amass Tool -->
+            <div class="tool-card" onclick="openTool('amass')">
+                <div class="tool-icon">🔍</div>
+                <div class="tool-title">AMASS</div>
+                <div class="tool-description">Advanced subdomain enumeration and DNS mapping for comprehensive attack surface discovery.</div>
+                <ul class="tool-features">
+                    <li>Passive & Active Enumeration</li>
+                    <li>DNS Bruteforcing</li>
+                    <li>Certificate Transparency</li>
+                    <li>API Integration (20+ sources)</li>
+                </ul>
+                <button class="launch-btn">Launch Module</button>
+            </div>
+
+            <!-- Shodan Tool -->
+            <div class="tool-card" onclick="openTool('shodan')">
+                <div class="tool-icon">🌐</div>
+                <div class="tool-title">SHODAN</div>
+                <div class="tool-description">Internet-wide device search and intelligence gathering for exposed systems and services.</div>
+                <ul class="tool-features">
+                    <li>Device Discovery</li>
+                    <li>Port & Service Detection</li>
+                    <li>Vulnerability Scanning</li>
+                    <li>IoT Device Mapping</li>
+                </ul>
+                <button class="launch-btn">Launch Module</button>
+            </div>
+
+            <!-- Photon Tool -->
+            <div class="tool-card" onclick="openTool('photon')">
+                <div class="tool-icon">🕷️</div>
+                <div class="tool-title">PHOTON</div>
+                <div class="tool-description">Lightning-fast web crawler for URLs, files, JavaScript, and metadata extraction.</div>
+                <ul class="tool-features">
+                    <li>Deep Web Crawling</li>
+                    <li>JavaScript File Extraction</li>
+                    <li>Email & Secret Discovery</li>
+                    <li>Metadata Harvesting</li>
+                </ul>
+                <button class="launch-btn">Launch Module</button>
+            </div>
+
+            <!-- Recon-ng Tool -->
+            <div class="tool-card" onclick="openTool('reconng')">
+                <div class="tool-icon">🛠️</div>
+                <div class="tool-title">RECON-NG</div>
+                <div class="tool-description">Modular reconnaissance framework with automated workflows and database integration.</div>
+                <ul class="tool-features">
+                    <li>Modular Architecture</li>
+                    <li>Database Integration</li>
+                    <li>API Aggregation</li>
+                    <li>Custom Workflows</li>
+                </ul>
+                <button class="launch-btn">Launch Module</button>
+            </div>
+
+            <!-- Nikto Tool -->
+            <div class="tool-card" onclick="openTool('nikto')">
+                <div class="tool-icon">🔐</div>
+                <div class="tool-title">NIKTO</div>
+                <div class="tool-description">Web server and application vulnerability scanner with comprehensive security testing.</div>
+                <ul class="tool-features">
+                    <li>6700+ Vulnerability Tests</li>
+                    <li>Server Misconfiguration</li>
+                    <li>Outdated Software Detection</li>
+                    <li>SSL/TLS Analysis</li>
+                </ul>
+                <button class="launch-btn">Launch Module</button>
+            </div>
+
+            <!-- Sherlock Tool -->
+            <div class="tool-card" onclick="openTool('sherlock')">
+                <div class="tool-icon">👤</div>
+                <div class="tool-title">SHERLOCK</div>
+                <div class="tool-description">Social media username tracking across 300+ platforms for digital footprint analysis.</div>
+                <ul class="tool-features">
+                    <li>300+ Platform Search</li>
+                    <li>Username Discovery</li>
+                    <li>Profile Aggregation</li>
+                    <li>Digital Footprint Mapping</li>
+                </ul>
+                <button class="launch-btn">Launch Module</button>
+            </div>
+
+            <!-- Phone Tracker Tool -->
+            <div class="tool-card" onclick="openTool('phonetracker')">
+                <div class="tool-icon">📱</div>
+                <div class="tool-title">PHONE TRACKER</div>
+                <div class="tool-description">International phone number OSINT with carrier, location, and social media linkage detection.</div>
+                <ul class="tool-features">
+                    <li>Nigerian & Global Coverage</li>
+                    <li>Carrier Identification</li>
+                    <li>Location Mapping</li>
+                    <li>Social Media Linkage</li>
+                </ul>
+                <button class="launch-btn">Launch Module</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="toolModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Tool Name</h2>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="modalContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTool = '';
+
+        const toolConfigs = {
+            amass: {
+                title: '🔍 AMASS - Subdomain Enumeration',
+                fields: [
+                    { label: 'Target Domain', type: 'text', id: 'domain', placeholder: 'example.com' },
+                    { label: 'Scan Mode', type: 'select', id: 'mode', options: ['Passive', 'Active', 'Bruteforce'] },
+                    { label: 'Max Subdomains', type: 'number', id: 'max', value: 100 }
+                ]
+            },
+            shodan: {
+                title: '🌐 SHODAN - Device Intelligence',
+                fields: [
+                    { label: 'Search Query', type: 'text', id: 'query', placeholder: 'apache port:443' },
+                    { label: 'Target IP/CIDR', type: 'text', id: 'target', placeholder: '192.168.1.0/24' },
+                    { label: 'Results Limit', type: 'number', id: 'limit', value: 50 }
+                ]
+            },
+            photon: {
+                title: '🕷️ PHOTON - Web Crawler',
+                fields: [
+                    { label: 'Target URL', type: 'text', id: 'url', placeholder: 'https://example.com' },
+                    { label: 'Crawl Depth', type: 'number', id: 'depth', value: 3 },
+                    { label: 'Extract', type: 'select', id: 'extract', options: ['All', 'URLs', 'Emails', 'Files', 'JavaScript'] }
+                ]
+            },
+            reconng: {
+                title: '🛠️ RECON-NG - Framework',
+                fields: [
+                    { label: 'Target Domain', type: 'text', id: 'domain', placeholder: 'example.com' },
+                    { label: 'Module', type: 'select', id: 'module', options: ['recon/domains-hosts/google_site_web', 'recon/hosts-hosts/resolve', 'recon/domains-contacts/whois_pocs'] },
+                    { label: 'Output Format', type: 'select', id: 'format', options: ['JSON', 'XML', 'CSV'] }
+                ]
+            },
+            nikto: {
+                title: '🔐 NIKTO - Vulnerability Scanner',
+                fields: [
+                    { label: 'Target Host', type: 'text', id: 'host', placeholder: 'https://example.com' },
+                    { label: 'Port', type: 'number', id: 'port', value: 443 },
+                    { label: 'Scan Type', type: 'select', id: 'scan', options: ['Full Scan', 'Quick Scan', 'SSL Only', 'CGI Only'] }
+                ]
+            },
+            sherlock: {
+                title: '👤 SHERLOCK - Username Search',
+                fields: [
+                    { label: 'Username', type: 'text', id: 'username', placeholder: 'johndoe' },
+                    { label: 'Platform Filter', type: 'select', id: 'filter', options: ['All Platforms', 'Social Media', 'Developer Sites', 'Forums'] },
+                    { label: 'Timeout (seconds)', type: 'number', id: 'timeout', value: 60 }
+                ]
+            },
+            phonetracker: {
+                title: '📱 PHONE TRACKER - Number Intelligence',
+                fields: [
+                    { label: 'Phone Number', type: 'text', id: 'phone', placeholder: '+234 XXX XXX XXXX or +1 XXX XXX XXXX' },
+                    { label: 'Country', type: 'select', id: 'country', options: ['Auto-Detect', 'Nigeria (+234)', 'USA (+1)', 'UK (+44)', 'India (+91)', 'South Africa (+27)', 'Kenya (+254)', 'Ghana (+233)', 'Canada (+1)', 'Australia (+61)', 'Germany (+49)'] },
+                    { label: 'Search Depth', type: 'select', id: 'depth', options: ['Basic Info', 'Deep Scan', 'Social Media Scan', 'Full OSINT'] }
+                ]
+            }
+        };
+
+        function openTool(tool) {
+            currentTool = tool;
+            const modal = document.getElementById('toolModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalContent = document.getElementById('modalContent');
+            
+            const config = toolConfigs[tool];
+            modalTitle.textContent = config.title;
+            
+            let formHTML = '<div class="stats-grid">';
+            formHTML += '<div class="stat-card"><div class="stat-number">0</div><div class="stat-label">Results Found</div></div>';
+            formHTML += '<div class="stat-card"><div class="stat-number">0</div><div class="stat-label">Active Scans</div></div>';
+            formHTML += '<div class="stat-card"><div class="stat-number">0</div><div class="stat-label">Vulnerabilities</div></div>';
+            formHTML += '</div>';
+            
+            config.fields.forEach(field => {
+                formHTML += '<div class="input-group">';
+                formHTML += `<label>${field.label}</label>`;
+                
+                if (field.type === 'select') {
+                    formHTML += `<select id="${field.id}">`;
+                    field.options.forEach(opt => {
+                        formHTML += `<option value="${opt}">${opt}</option>`;
+                    });
+                    formHTML += '</select>';
+                } else {
+                    formHTML += `<input type="${field.type}" id="${field.id}" placeholder="${field.placeholder || ''}" value="${field.value || ''}">`;
+                }
+                
+                formHTML += '</div>';
+            });
+            
+            formHTML += '<button class="launch-btn" onclick="runScan()">Start Scan</button>';
+            formHTML += '<div class="progress-bar" style="display:none;" id="progressBar"><div class="progress-fill" id="progressFill">0%</div></div>';
+            formHTML += '<div class="terminal-output" id="terminalOutput"><div class="terminal-line">[SYSTEM] Ready to execute ' + tool.toUpperCase() + ' module...</div></div>';
+            formHTML += '<div class="results-container" id="resultsContainer"></div>';
+            
+            modalContent.innerHTML = formHTML;
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('toolModal').style.display = 'none';
+        }
+
+        async function runScan() {
+            const terminal = document.getElementById('terminalOutput');
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            terminal.innerHTML = '';
+            resultsContainer.innerHTML = '';
+            progressBar.style.display = 'block';
+            
+            addTerminalLine('[INIT] Initializing ' + currentTool.toUpperCase() + ' module...', 'info');
+            await sleep(500);
+            addTerminalLine('[OK] Module loaded successfully', 'success');
+            await sleep(300);
+            
+            // Simulate scanning process
+            const scanSteps = getScanSteps(currentTool);
+            
+            for (let i = 0; i < scanSteps.length; i++) {
+                await sleep(800);
+                addTerminalLine(scanSteps[i].message, scanSteps[i].type);
+                updateProgress((i + 1) / scanSteps.length * 100);
+            }
+            
+            await sleep(500);
+            addTerminalLine('[COMPLETE] Scan finished. Generating report...', 'success');
+            
+            // Display results
+            displayResults(currentTool);
+        }
+
+        function getScanSteps(tool) {
+            const steps = {
+                amass: [
+                    { message: '[SCAN] Starting passive enumeration...', type: 'info' },
+                    { message: '[API] Querying Certificate Transparency logs...', type: 'info' },
+                    { message: '[FOUND] 47 subdomains from crt.sh', type: 'success' },
+                    { message: '[API] Checking VirusTotal database...', type: 'info' },
+                    { message: '[FOUND] 23 additional subdomains', type: 'success' },
+                    { message: '[DNS] Performing DNS bruteforce...', type: 'warning' },
+                    { message: '[FOUND] 12 subdomains via bruteforce', type: 'success' },
+                    { message: '[VERIFY] Resolving all discovered subdomains...', type: 'info' }
+                ],
+                shodan: [
+                    { message: '[CONNECT] Connecting to Shodan API...', type: 'info' },
+                    { message: '[SEARCH] Scanning target range...', type: 'info' },
+                    { message: '[FOUND] 34 exposed devices detected', type: 'warning' },
+                    { message: '[ANALYZE] Identifying services and versions...', type: 'info' },
+                    { message: '[VULN] 12 devices with known vulnerabilities', type: 'error' },
+                    { message: '[PORT] Common ports: 80, 443, 22, 3306, 8080', type: 'info' }
+                ],
+                photon: [
+                    { message: '[CRAWL] Starting web crawler...', type: 'info' },
+                    { message: '[EXTRACT] Parsing HTML structure...', type: 'info' },
+                    { message: '[FOUND] 156 URLs discovered', type: 'success' },
+                    { message: '[JS] Extracting JavaScript files...', type: 'info' },
+                    { message: '[FOUND] 23 .js files with API endpoints', type: 'warning' },
+                    { message: '[EMAIL] 8 email addresses harvested', type: 'success' },
+                    { message: '[SECRET] Potential secrets found in comments', type: 'error' }
+                ],
+                reconng: [
+                    { message: '[MODULE] Loading recon module...', type: 'info' },
+                    { message: '[QUERY] Executing reconnaissance...', type: 'info' },
+                    { message: '[DNS] Resolving hostnames...', type: 'info' },
+                    { message: '[WHOIS] Gathering registration data...', type: 'info' },
+                    { message: '[CONTACT] 5 email contacts discovered', type: 'success' },
+                    { message: '[GEO] Location data retrieved', type: 'info' }
+                ],
+                nikto: [
+                    { message: '[CONNECT] Testing target accessibility...', type: 'info' },
+                    { message: '[SSL] Analyzing SSL/TLS configuration...', type: 'info' },
+                    { message: '[VULN] Weak cipher suites detected', type: 'warning' },
+                    { message: '[SCAN] Testing 6700+ vulnerabilities...', type: 'info' },
+                    { message: '[FOUND] Directory listing enabled', type: 'error' },
+                    { message: '[FOUND] Outdated Apache version detected', type: 'warning' },
+                    { message: '[FOUND] Missing security headers', type: 'error' }
+                ],
+                sherlock: [
+                    { message: '[INIT] Starting username search...', type: 'info' },
+                    { message: '[SEARCH] Querying 300+ platforms...', type: 'info' },
+                    { message: '[FOUND] GitHub profile located', type: 'success' },
+                    { message: '[FOUND] Twitter account discovered', type: 'success' },
+                    { message: '[FOUND] LinkedIn profile found', type: 'success' },
+                    { message: '[FOUND] Instagram account active', type: 'success' },
+                    { message: '[TOTAL] Username found on 47 platforms', type: 'success' }
+                ],
+                phonetracker: [
+                    { message: '[INIT] Initializing phone number lookup...', type: 'info' },
+                    { message: '[PARSE] Validating phone number format...', type: 'info' },
+                    { message: '[OK] Valid Nigerian number detected (+234)', type: 'success' },
+                    { message: '[CARRIER] Identifying mobile carrier...', type: 'info' },
+                    { message: '[FOUND] Carrier: MTN Nigeria', type: 'success' },
+                    { message: '[LOCATION] Performing geolocation lookup...', type: 'info' },
+                    { message: '[FOUND] Region: Lagos State, Nigeria', type: 'success' },
+                    { message: '[OSINT] Searching social media databases...', type: 'info' },
+                    { message: '[FOUND] WhatsApp account active', type: 'warning' },
+                    { message: '[FOUND] Telegram account linked', type: 'warning' },
+                    { message: '[SEARCH] Checking public records...', type: 'info' },
+                    { message: '[PRIVACY] Number registered with Truecaller', type: 'info' },
+                    { message: '[COMPLETE] Lookup finished', type: 'success' }
+                ]
+            };
+            
+            return steps[tool] || [];
+        }
+
+        function displayResults(tool) {
+            const container = document.getElementById('resultsContainer');
+            const results = getSimulatedResults(tool);
+            
+            let html = '<h3 style="color: #00ff41; margin: 20px 0;">Scan Results</h3>';
+            
+            results.forEach(result => {
+                html += `
+                    <div class="result-item">
+                        <div class="result-title">${result.title}</div>
+                        <div class="result-data">${result.data}</div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function getSimulatedResults(tool) {
+            const results = {
+                amass: [
+                    { title: 'Subdomains Discovered', data: 'www.example.com, mail.example.com, api.example.com, admin.example.com, dev.example.com' },
+                    { title: 'IP Addresses', data: '192.168.1.10, 192.168.1.20, 10.0.0.5' },
+                    { title: 'Name Servers', data: 'ns1.example.com, ns2.example.com' }
+                ],
+                shodan: [
+                    { title: 'Exposed Services', data: 'HTTP (80), HTTPS (443), SSH (22), MySQL (3306)' },
+                    { title: 'Vulnerable Devices', data: 'Apache 2.4.29 (CVE-2021-44790), OpenSSH 7.4 (CVE-2018-15473)' },
+                    { title: 'Geographic Distribution', data: 'US: 45%, EU: 30%, Asia: 25%' }
+                ],
+                photon: [
+                    { title: 'URLs Extracted', data: '/api/v1/users, /admin/dashboard, /login, /assets/config.js' },
+                    { title: 'Email Addresses', data: 'admin@example.com, support@example.com, info@example.com' },
+                    { title: 'JavaScript Files', data: 'app.bundle.js, vendor.js, analytics.js, config.js' }
+                ],
+                reconng: [
+                    { title: 'Contacts Found', data: 'John Doe (john@example.com), Jane Smith (jane@example.com)' },
+                    { title: 'DNS Records', data: 'A: 192.168.1.1, MX: mail.example.com, NS: ns1.example.com' },
+                    { title: 'WHOIS Data', data: 'Registrar: GoDaddy, Created: 2015-03-12, Expires: 2025-03-12' }
+                ],
+                nikto: [
+                    { title: 'Critical Issues', data: 'Directory Listing Enabled, Weak SSL Ciphers, Missing Security Headers' },
+                    { title: 'Server Info', data: 'Apache/2.4.41 (Ubuntu), PHP/7.4.3' },
+                    { title: 'Recommendations', data: 'Update Apache, Configure HSTS, Disable directory browsing' }
+                ],
+                sherlock: [
+                    { title: 'Social Media', data: 'Twitter, Instagram, Facebook, LinkedIn, TikTok' },
+                    { title: 'Developer Platforms', data: 'GitHub, GitLab, Stack Overflow, HackerRank' },
+                    { title: 'Gaming', data: 'Steam, Xbox Live, PlayStation Network, Discord' }
+                ],
+                phonetracker: [
+                    { title: 'Phone Number', data: '+234 XXX XXX XXXX (Nigerian Mobile)' },
+                    { title: 'Carrier Information', data: 'MTN Nigeria Communications Limited' },
+                    { title: 'Number Type', data: 'Mobile (GSM)' },
+                    { title: 'Location', data: 'Lagos State, Nigeria (Southwest Region)' },
+                    { title: 'Time Zone', data: 'GMT+1 (West Africa Time)' },
+                    { title: 'Registration Status', data: 'Active - SIM registered with NCC' },
+                    { title: 'Social Media Presence', data: 'WhatsApp: Active, Telegram: Linked, Truecaller: Registered' },
+                    { title: 'Spam Score', data: 'Low (2/10) - No spam reports found' },
+                    { title: 'Connected Apps', data: 'WhatsApp Business, Signal, IMO' },
+                    { title: 'Last Seen Online', data: 'WhatsApp: 2 hours ago (Privacy: Last Seen Hidden)' }
+                ]
+            };
+            
+            return results[tool] || [];
+        }
+
+        function addTerminalLine(text, type = 'info') {
+            const terminal = document.getElementById('terminalOutput');
+            const line = document.createElement('div');
+            line.className = `terminal-line ${type}`;
+            line.textContent = text;
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function updateProgress(percent) {
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = percent + '%';
+            progressFill.textContent = Math.round(percent) + '%';
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('toolModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
